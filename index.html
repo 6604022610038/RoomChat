@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoomChat</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Base Styles */
+* { box-sizing:border-box; margin:0; padding:0; }
+body { 
+    font-family:'Kanit', sans-serif; 
+    background:#ffebee; /* Light Pink Background */
+    color:#333;
+}
+
+/* Header */
+header { 
+    background:#e91e63; /* Deep Pink Header */
+    color:white; 
+    padding:15px 20px; 
+    font-size:1.4em; 
+    font-weight:bold; 
+    box-shadow:0 2px 5px rgba(0,0,0,0.1); 
+    text-align:center;
+    /* [แก้ไข]: เพิ่ม position: relative เพื่อรองรับปุ่ม Logout */
+    position: relative; 
+}
+
+/* [ใหม่]: Style สำหรับปุ่ม Logout */
+#logoutBtn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: none;
+    background: #c2185b; /* Darker Pink */
+    color: white;
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+#logoutBtn:hover {
+    background: #880e4f; /* Even Darker Pink */
+}
+
+/* Login/Register Area */
+#loginArea {
+    display:flex; 
+    flex-direction:column; 
+    align-items:center; 
+    justify-content:center;
+    height:calc(100vh - 50px); 
+    gap:15px; 
+    background:rgba(255,255,255,0.9);
+    padding:20px;
+    border-radius:10px;
+    margin:20px auto;
+    max-width:400px;
+}
+#loginArea input { 
+    padding:12px 15px; 
+    width:250px; 
+    border-radius:25px; 
+    border:1px solid #ffccd5; /* Pink border */
+    font-size:1em; 
+    outline:none;
+    transition:border-color 0.3s;
+}
+#loginArea input:focus {
+    border-color:#e91e63; /* Deep pink on focus */
+}
+#loginArea button { 
+    padding:12px 25px; 
+    border-radius:25px; 
+    border:none; 
+    background:#f48fb1; /* Medium Pink Button */
+    color:white; 
+    font-weight:bold; 
+    cursor:pointer; 
+    transition:background-color 0.3s, transform 0.1s; 
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+#loginArea button:hover { 
+    background:#e91e63; /* Deep Pink on hover */
+    transform: translateY(-1px);
+}
+#loginArea button:active {
+    transform: translateY(0);
+}
+
+/* Main Chat Container */
+.container{
+display:flex;
+height:calc(100vh - 60px);
+max-width:1400px;
+margin:auto;
+background:white;
+border-radius:10px;
+overflow:hidden;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Sidebar */
+.sidebar{
+width:300px;
+background:#fce4ec;
+border-right:1px solid #f8bbd0;
+display:flex;
+flex-direction:column;
+padding:20px;
+}
+
+/* Chat */
+.chat-area{
+flex:1;
+display:flex;
+flex-direction:column;
+background:#fff;
+}
+
+/* User panel */
+.user-panel{
+width:230px;
+background:#fce4ec;
+border-left:1px solid #f8bbd0;
+padding:15px;
+overflow-y:auto;
+}
+
+.user-panel{
+width:220px;
+background:#fce4ec;
+border-left:1px solid #f8bbd0;
+padding:15px;
+}
+
+.user-item{
+padding:6px 10px;
+margin-bottom:6px;
+border-radius:10px;
+background:white;
+border:1px solid #f8bbd0;
+font-size:0.9em;
+}
+/* Sidebar (Room List) */
+.sidebar { 
+    width:320px; 
+    padding:20px 15px; 
+    background:#fce4ec; /* Lighter Pink Sidebar */
+    border-right:1px solid #f8bbd0; /* Pink border */
+    display:flex; 
+    flex-direction:column;
+}
+.sidebar h2 {
+    color:#e91e63;
+    margin-bottom:15px;
+    font-size:1.2em;
+    text-align:center;
+}
+.sidebar input { 
+    padding:12px 15px; 
+    border:1px solid #f8bbd0; 
+    border-radius:25px; 
+    margin-bottom:10px; 
+    font-size:0.95em;
+    outline:none;
+}
+.sidebar input:focus {
+    border-color:#e91e63;
+}
+.sidebar button { 
+    padding:12px 15px; 
+    border-radius:25px; 
+    border:none; 
+    background:#f06292; /* Medium-Dark Pink Button */
+    color:white; 
+    font-weight:bold; 
+    cursor:pointer; 
+    transition:background-color 0.3s, transform 0.1s;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.sidebar button:hover { 
+    background:#e91e63; /* Deep Pink on hover */
+    transform: translateY(-1px);
+}
+.sidebar button:active {
+    transform: translateY(0);
+}
+
+/* Room List */
+#roomList {
+    flex:1; 
+    overflow-y:auto; 
+    margin-top:20px; 
+    padding: 0 5px 10px 5px; /* Adjust padding */
+}
+
+.room-item {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: #fff;
+    border-radius: 20px; /* More rounded */
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+    font-size: 0.95em;
+    font-weight: 500;
+    color: #555;
+    border: 1px solid #f8bbd0;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.room-item:hover {
+    background: #f8bbd0; /* Lighter pink on hover */
+    color: #e91e63;
+    border-color: #e91e63;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.room-item.selected {
+    background: #e91e63; /* Deep Pink when selected */
+    color: white;
+    border-color: #e91e63;
+    font-weight: bold;
+    box-shadow:0 3px 8px rgba(0,0,0,0.2);
+}
+
+/* Chat Area */
+.chat-area { 
+    flex:1; 
+    display:flex; 
+    flex-direction:column; 
+    background:#fff; /* White background for chat area */
+    position:relative; /* For current room name display */
+}
+
+.current-room-name {
+    padding:15px;
+    background:#f8bbd0; /* Light pink background */
+    color:#e91e63; /* Deep pink text */
+    font-weight:bold;
+    text-align:center;
+    border-bottom:1px solid #e91e63;
+    font-size:1.1em;
+}
+
+/* Messages Container */
+#messages { 
+    flex:1; 
+    padding:20px; 
+    overflow-y:auto; 
+    display:flex; 
+    flex-direction:column; 
+    gap:10px; 
+    background:#fef7f7; /* Very light pink chat background */
+}
+
+/* Message Bubble Base Style */
+.message { 
+    max-width:75%; 
+    padding:10px 15px; 
+    border-radius:20px; 
+    position:relative;
+    word-wrap: break-word;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* My Messages (ข้อความที่ฉันส่ง) */
+.my-message {
+    align-self:flex-end;
+    background:#f48fb1; /* Medium Pink */
+    color:white;
+    border-bottom-right-radius: 5px;
+}
+
+/* Other Messages (ข้อความที่ผู้อื่นส่ง) */
+.other-message {
+    align-self:flex-start;
+    background:white;
+    color:#333;
+    border:1px solid #f8bbd0;
+    border-bottom-left-radius: 5px;
+}
+
+/* Sender Name */
+.message-sender {
+    font-size:0.75em;
+    font-weight:bold;
+    margin-bottom:2px;
+    opacity:0.8;
+}
+.my-message .message-sender {
+    color: rgba(255, 255, 255, 0.9);
+}
+.other-message .message-sender {
+    color: #e91e63; /* Deep Pink for others' sender name */
+}
+
+/* Input Area */
+.input-area { 
+    padding:15px 20px; 
+    border-top:1px solid #f8bbd0; 
+    display:flex; 
+    gap:10px; 
+    background:white;
+    align-items:center;
+}
+.input-area input[type="text"] { 
+    flex:1; 
+    padding:12px 20px; 
+    border-radius:25px; 
+    border:1px solid #f8bbd0; 
+    font-size:1em; 
+    outline:none;
+}
+.input-area input[type="text"]:focus {
+    border-color:#e91e63;
+}
+.input-area button { 
+    padding:12px 25px; 
+    border-radius:25px; 
+    border:none; 
+    background:#f48fb1; /* Medium Pink Button */
+    color:white; 
+    font-weight:bold; 
+    cursor:pointer; 
+    transition:background-color 0.3s, transform 0.1s;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.input-area button:hover { 
+    background:#e91e63; /* Deep Pink on hover */
+    transform: translateY(-1px);
+}
+.input-area button:active {
+    transform: translateY(0);
+}
+
+/* File Input Button */
+.input-area .file-btn { /* Style for file button */
+    padding:12px 18px;
+    background:#c2185b; /* Darker Pink for file button */
+}
+.input-area .file-btn:hover {
+    background:#880e4f;
+}
+
+/* Scrollbar */
+#messages::-webkit-scrollbar, .sidebar::-webkit-scrollbar { width:8px; }
+#messages::-webkit-scrollbar-track, .sidebar::-webkit-scrollbar-track { background:#fce4ec; } /* Light pink track */
+#messages::-webkit-scrollbar-thumb, .sidebar::-webkit-scrollbar-thumb { background:#f48fb1; border-radius:4px; } /* Medium pink thumb */
+#messages::-webkit-scrollbar-thumb:hover, .sidebar::-webkit-scrollbar-thumb:hover { background:#e91e63; } /* Deep pink on hover */
+
+/* ---------------------------------- */
+/* [ใหม่] Mobile Responsive Styles */
+/* ---------------------------------- */
+
+/* สไตล์สำหรับปุ่มสลับเมนูบนมือถือ */
+#mobileToggle {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e91e63; /* Deep Pink */
+    color: white;
+    border: none;
+    font-size: 1.5em;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    z-index: 100;
+    display: none; /* ซ่อนไว้ก่อน ถูกควบคุมด้วย JS/Media Query */
+}
+
+@media (max-width: 768px) {
+    /* ปรับเลย์เอาต์หลักให้เป็นคอลัมน์เดียว */
+    .container {
+        flex-direction: column; 
+        margin: 0; 
+        height: 100vh; 
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    
+    /* ซ่อน Sidebar และทำให้ลอยขึ้นมาเมื่อกด */
+    .sidebar {
+        position: fixed; 
+        width: 100%; 
+        height: 100%;
+        z-index: 50;
+        transform: translateX(-100%); /* ซ่อนไปทางซ้าย */
+        transition: transform 0.3s ease-in-out;
+        border-right: none;
+        box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    }
+    
+    .sidebar.active {
+        transform: translateX(0); /* แสดง Sidebar เมื่อมีคลาส active */
+    }
+    
+    /* ปรับพื้นที่แชทให้เต็มจอ */
+    .chat-area {
+        flex-grow: 1;
+        width: 100%; 
+        padding-bottom: 70px; /* เพิ่มช่องว่างด้านล่างสำหรับ input area */
+    }
+    
+    /* ตรึง Input Area ไว้ด้านล่างเสมอ */
+    .input-area {
+        position: fixed; 
+        bottom: 0;
+        width: 100%;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #eee;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        z-index: 60; 
+        /* ปรับให้ปุ่มและ input อยู่ในบรรทัดเดียวกันได้ดีขึ้น */
+        display: flex; 
+        gap: 10px;
+    }
+    
+    #messageInput {
+        flex-grow: 1;
+        width: auto; /* ให้มันยืดหยุ่น */
+    }
+
+    /* แสดงปุ่มสลับเมนู */
+    #mobileToggle {
+        display: block;
+    }
+    
+    /* ปรับขนาดข้อความให้กว้างขึ้นบนมือถือ */
+    .chat-bubble {
+        max-width: 90%;
+    }
+    
+    /* จัดการปุ่มออกจากระบบ (Logout) บน Header มือถือ */
+    header #logoutBtn {
+        position: static; /* ลบการจัดตำแหน่งแบบ Absolute */
+        transform: none;
+        margin-left: 10px;
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+}
+
+
+</style>
+</head>
+<body>
+
+<header>
+    RoomChat
+    <button id="logoutBtn" style="display:none;">ออกจากระบบ</button>
+</header>
+<button id="mobileToggle" style="display:none;">☰</button> <div id="loginArea">
+    <input type="text" id="username" placeholder="ชื่อผู้ใช้">
+    <input type="password" id="password" placeholder="รหัสผ่าน">
+    <button id="loginBtn">เข้าสู่ระบบ</button>
+    <button id="registerBtn">สมัครสมาชิก</button>
+</div>
+
+<div class="container" id="chatContainer" style="display:none;">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>ห้องแชท</h2>
+
+        <input type="text" id="roomInput" placeholder="พิมพ์ชื่อห้องใหม่/ส่วนตัว">
+
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button id="joinRoomBtn" style="flex:1;">เข้าร่วมห้อง</button>
+            <button id="createRoomBtn" style="flex:1;">สร้างห้องใหม่</button>
+        </div>
+
+        <div id="roomList"></div>
+    </div>
+
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chatContent">
+
+        <div class="current-room-name" id="currentRoomNameDisplay">
+            เลือกห้องแชท
+        </div>
+
+        <div id="messages"></div>
+
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="พิมพ์ข้อความ...">
+            <button id="sendBtn">ส่ง</button>
+        </div>
+
+    </div>
+
+
+    <!-- User Panel -->
+    <div class="user-panel">
+        <h3>ผู้ใช้งานในห้อง</h3>
+        <div id="roomUsersList"></div>
+    </div>
+
+</div>
+
+</div>
+<script src="renderer.js"></script>
+</body>
+</html>
